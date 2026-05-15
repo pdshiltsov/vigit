@@ -35,9 +35,24 @@ def draw_status_bar(stdscr, text: str) -> None:
     stdscr.attroff(curses.color_pair(STATUS_PAIR))
 
 
-def render(stdscr, commits: list[Commit], pos: int) -> None:
-    stdscr.erase()
+def draw_popup(stdscr, text):
+    h, w = stdscr.getmaxyx()
 
+    height = 7
+    width = 40
+
+    y = (h - height) // 2
+    x = (w - width) // 2
+
+    win = curses.newwin(height, width, y, x)
+    win.box()
+
+    win.addstr(2, 2, text[:width - 4])
+    win.addstr(5, 2, "(q to exit)")
+
+    return win
+
+def render(stdscr, commits: list[Commit], pos: int, state: bool) -> None:
     h, w = stdscr.getmaxyx()
 
     stdscr.attron(curses.color_pair(TEXT_PAIR))
@@ -53,9 +68,12 @@ def render(stdscr, commits: list[Commit], pos: int) -> None:
     stdscr.attroff(curses.color_pair(TEXT_PAIR))
 
     # status bar
-    draw_status_bar(stdscr, f" (q to exit) pos: {pos}, h: {h}, w: {w}")
+    if state:
+        status = f" (q to exit) pos: {(pos % limit)}, h: {h}, w: {w} --PopUp--"
+    else:
+        status = f" (q to exit) pos: {(pos % limit)}, h: {h}, w: {w} --Normal--"
 
-    stdscr.refresh()
+    draw_status_bar(stdscr, status)
 
 def main(stdscr) -> None:
     curses.curs_set(0)
@@ -65,13 +83,31 @@ def main(stdscr) -> None:
     commits = get_commits()
 
     y = 0
-    while True:
-        render(stdscr, commits, y)
+    popup_opn = False
 
+    popup_win = None
+    while True:
+        stdscr.erase()
+        stdscr.refresh()
+
+        render(stdscr, commits, y, popup_opn)
+
+        
+        if popup_opn and popup_win is not None:
+            popup_win.refresh()
+        
         key = stdscr.getch()
 
+        if popup_opn:
+            if popup_win is None:
+                popup_win = draw_popup(stdscr, "TEST")
+
         if key == ord("q"):
-            break
+            if popup_opn:
+                popup_win = None
+                popup_opn = False
+            else:
+                break
 
         elif key == ord("j"):
             y += 1
@@ -80,8 +116,14 @@ def main(stdscr) -> None:
             if y - 1 >= 0:
                 y -= 1
 
+        elif key in (curses.KEY_ENTER, 10, 13):
+            popup_win = draw_popup(stdscr, "TEST")
+            popup_opn = True
+
         else:
-            pass # Passing 
-            
+            pass # Passing
+
+        
+        
 if __name__ == "__main__":
     curses.wrapper(main)
