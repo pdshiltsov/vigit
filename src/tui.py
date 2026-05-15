@@ -1,4 +1,5 @@
 from git_process import Commit, get_commits
+from popups import draw_commit_info_popup
 import curses
 
 # Color configuration
@@ -34,24 +35,6 @@ def draw_status_bar(stdscr, text: str) -> None:
     stdscr.addstr(y, 0, text[:w].ljust(w))
     stdscr.attroff(curses.color_pair(STATUS_PAIR))
 
-
-def draw_popup(stdscr, text):
-    h, w = stdscr.getmaxyx()
-
-    height = 7
-    width = 40
-
-    y = (h - height) // 2
-    x = (w - width) // 2
-
-    win = curses.newwin(height, width, y, x)
-    win.box()
-
-    win.addstr(2, 2, text[:width - 4])
-    win.addstr(5, 2, "(q to exit)")
-
-    return win
-
 def render(stdscr, commits: list[Commit], pos: int, state: bool) -> None:
     h, w = stdscr.getmaxyx()
 
@@ -75,6 +58,7 @@ def render(stdscr, commits: list[Commit], pos: int, state: bool) -> None:
 
     draw_status_bar(stdscr, status)
 
+
 def main(stdscr) -> None:
     curses.curs_set(0)
     stdscr.keypad(True)
@@ -82,48 +66,49 @@ def main(stdscr) -> None:
     init_colors()
     commits = get_commits()
 
-    y = 0
-    popup_opn = False
+    state = {
+        "popup": False,
+        "win": None,
+        "exit": False
+    }
 
-    popup_win = None
+    y = 0
     while True:
         stdscr.erase()
         stdscr.refresh()
+    
+        render(stdscr, commits, y, state["popup"])
+    
+        if state["popup"] and state["win"] is not None:
+            state["win"].refresh()
 
-        render(stdscr, commits, y, popup_opn)
+        if state["popup"]:
+            if state["win"] is None:
+                state["win"] = draw_popup(stdscr, "TEST")
 
-        
-        if popup_opn and popup_win is not None:
-            popup_win.refresh()
-        
         key = stdscr.getch()
 
-        if popup_opn:
-            if popup_win is None:
-                popup_win = draw_popup(stdscr, "TEST")
-
         if key == ord("q"):
-            if popup_opn:
-                popup_win = None
-                popup_opn = False
+            if state["popup"]:
+                state["win"] = None
+                state["popup"] = False
             else:
-                break
-
+                state["exit"] = True
+            
         elif key == ord("j"):
             y += 1
 
         elif key == ord("k"):
             if y - 1 >= 0:
-                y -= 1
-
+                y -= 1  
+            
         elif key in (curses.KEY_ENTER, 10, 13):
-            popup_win = draw_popup(stdscr, "TEST")
-            popup_opn = True
+            state["win"] = draw_commit_info_popup(stdscr, commits[y])
+            state["popup"] = True
 
         else:
             pass # Passing
 
-        
         
 if __name__ == "__main__":
     curses.wrapper(main)
