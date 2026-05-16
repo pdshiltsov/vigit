@@ -52,9 +52,9 @@ def render(stdscr, commits: list[Commit], pos: int, state: bool) -> None:
 
     # status bar
     if state:
-        status = f" (q to exit) pos: {(pos % limit)}, h: {h}, w: {w} --PopUp--"
+        status_bar = f" (q to exit) pos: {(pos % limit)}, h: {h}, w: {w} --PopUp--"
     else:
-        status = f" (q to exit) pos: {(pos % limit)}, h: {h}, w: {w} --Normal--"
+        status_bar = f" (q to exit) pos: {(pos % limit)}, h: {h}, w: {w} --Normal--"
 
     draw_status_bar(stdscr, status)
 
@@ -69,7 +69,7 @@ def main(stdscr) -> None:
     state = {
         "popup": False,
         "win": None,
-        "exit": False
+        "status": "base"
     }
 
     y = 0
@@ -84,7 +84,7 @@ def main(stdscr) -> None:
 
         if state["popup"]:
             if state["win"] is None:
-                state["win"] = draw_popup(stdscr, "TEST")
+                state["win"] = draw_commit_info_popup(stdscr, commits[y])
 
         key = stdscr.getch()
 
@@ -100,7 +100,11 @@ def main(stdscr) -> None:
 
         elif key == ord("k"):
             if y - 1 >= 0:
-                y -= 1  
+                y -= 1
+
+        elif key == ord("s"):
+            state["win"] = draw_commit_info_popup(stdscr, commits[y])
+            state["popup"] = True
             
         elif key in (curses.KEY_ENTER, 10, 13):
             state["win"] = draw_commit_info_popup(stdscr, commits[y])
