@@ -35,7 +35,7 @@ def draw_status_bar(stdscr, text: str) -> None:
     stdscr.addstr(y, 0, text[:w].ljust(w))
     stdscr.attroff(curses.color_pair(STATUS_PAIR))
 
-def render(stdscr, commits: list[Commit], pos: int, state: bool) -> None:
+def render(stdscr, commits: list[Commit], pos: int, state: dict) -> None:
     h, w = stdscr.getmaxyx()
 
     stdscr.attron(curses.color_pair(TEXT_PAIR))
@@ -51,12 +51,9 @@ def render(stdscr, commits: list[Commit], pos: int, state: bool) -> None:
     stdscr.attroff(curses.color_pair(TEXT_PAIR))
 
     # status bar
-    if state:
-        status_bar = f" (q to exit) pos: {(pos % limit)}, h: {h}, w: {w} --PopUp--"
-    else:
-        status_bar = f" (q to exit) pos: {(pos % limit)}, h: {h}, w: {w} --Normal--"
-
-    draw_status_bar(stdscr, status)
+    status = state["status"]
+    status_bar = f" (q to exit) pos: {(pos % limit)}, h: {h}, w: {w} --{status}--"
+    draw_status_bar(stdscr, status_bar)
 
 
 def main(stdscr) -> None:
@@ -67,7 +64,6 @@ def main(stdscr) -> None:
     commits = get_commits()
 
     state = {
-        "popup": False,
         "win": None,
         "status": "base"
     }
@@ -77,42 +73,43 @@ def main(stdscr) -> None:
         stdscr.erase()
         stdscr.refresh()
     
-        render(stdscr, commits, y, state["popup"])
-    
-        if state["popup"] and state["win"] is not None:
-            state["win"].refresh()
+        render(stdscr, commits, y, state)
 
-        if state["popup"]:
-            if state["win"] is None:
-                state["win"] = draw_commit_info_popup(stdscr, commits[y])
+        if state["win"] is not None:
+            state["win"].refresh()
 
         key = stdscr.getch()
 
-        if key == ord("q"):
-            if state["popup"]:
-                state["win"] = None
-                state["popup"] = False
-            else:
-                state["exit"] = True
-            
-        elif key == ord("j"):
-            y += 1
+        # TODO: base, msg, save status
+        match state["status"]: 
+            case "base": # not popup window status
+                if key == ord("q"):
+                    break
 
-        elif key == ord("k"):
-            if y - 1 >= 0:
-                y -= 1
+                elif key == ord("j"):
+                    y += 1
 
-        elif key == ord("s"):
-            state["win"] = draw_commit_info_popup(stdscr, commits[y])
-            state["popup"] = True
-            
-        elif key in (curses.KEY_ENTER, 10, 13):
-            state["win"] = draw_commit_info_popup(stdscr, commits[y])
-            state["popup"] = True
+                elif key == ord("k"):
+                    if y - 1 >= 0:
+                        y -= 1
 
-        else:
-            pass # Passing
+                elif key in (curses.KEY_ENTER, 10, 13):
+                    state["win"] = draw_commit_info_popup(stdscr, commits[y])
+                    state["status"] = "info"
+                # TODO: add `save` popup
+                else:
+                    pass
 
+            case "info":
+                if key == ord("q"):
+                    state["win"] = None
+                    state["status"] = "base"
+                else:
+                    pass
+
+            case _:
+                pass # Undefined status
+        
         
 if __name__ == "__main__":
     curses.wrapper(main)
