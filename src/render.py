@@ -57,8 +57,12 @@ def info_render(stdscr, commit: Commit, pos: int, state: dict) -> None:
     limit = min(h - 2 - 2, len(lines))
 
     # TODO: add pager with "j" and "k" keys
-    for i in range(0, limit):
-        stdscr.addstr(i + 1, 1, lines[i])
 
+    if len(lines) <= h - 4:
+        for i in range(0, limit):
+            stdscr.addstr(i + 1, 1, lines[i])
+    else:
+        for i in range(pos, pos + limit):
+            stdscr.addstr(i + 1, 1, lines[i])
     stdscr.attroff(curses.color_pair(TEXT_PAIR))
     draw_status_bar(stdscr, pos % limit, state)
