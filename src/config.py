@@ -1,0 +1,11 @@
+import curses
+
+
+TEXT_FG = curses.COLOR_WHITE
+TEXT_BG = curses.COLOR_BLACK
+
+STATUS_FG = curses.COLOR_BLACK
+STATUS_BG = curses.COLOR_CYAN
+
+TEXT_PAIR = 1
+STATUS_PAIR = 2
