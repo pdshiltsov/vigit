@@ -1,3 +1,8 @@
+# Copyright (C) 2025 vigit
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License.
+
 import curses
 from git_process import Commit
 from config import *
@@ -22,7 +27,8 @@ def base_render(stdscr, commits: list[Commit], pos: int, state: dict) -> None:
 
     stdscr.attron(curses.color_pair(TEXT_PAIR))
     limit = min(h - 2 - 2, len(commits))
-    
+
+    pager = 0
     for i in range(0, limit):
         if i == (pos % limit):
             stdscr.addstr(i + 2, 2, commit_render(commits[i]), curses.A_REVERSE)
