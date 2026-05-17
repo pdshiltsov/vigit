@@ -31,6 +31,7 @@ def main(stdscr) -> None:
     }
 
     y = 0
+    pager_pos = 0
     saved_info = None
     while True:
         stdscr.erase()
@@ -40,7 +41,7 @@ def main(stdscr) -> None:
             case "base":
                 base_render(stdscr, commits, y, state)
             case "info":
-                info_render(stdscr, saved_info, y, state)
+                pos_limit = info_render(stdscr, saved_info, pager_pos, state)
                 
         key = stdscr.getch()
 
@@ -58,7 +59,7 @@ def main(stdscr) -> None:
 
                 elif key in (curses.KEY_ENTER, 10, 13):
                     state["status"] = "info"
-                    saved_info = commits[y]
+                    saved_info = commits[y % len(commits)]
                 else:
                     pass
 
@@ -66,6 +67,16 @@ def main(stdscr) -> None:
                 if key == ord("q"):
                     state["status"] = "base"
                     saved_info = None
+                    pager_pos = 0
+
+                elif key == ord("j"):
+                    if pager_pos < pos_limit:
+                        pager_pos += 1
+
+                elif key == ord("k"):
+                    if pager_pos - 1 >= 0:
+                        pager_pos -= 1
+                        
                 else:
                     pass
 
