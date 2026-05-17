@@ -4,7 +4,7 @@
 
 ![License](https://img.shields.io/badge/license-GPL%20v3-blue.svg)
 ![Python](https://img.shields.io/badge/python-3.12-blue?logo=python&logoColor=yellow)
-![WIP](https://img.shields.io/badge/status-WIP-ff69b4?style=flat-square)
+![WIP](https://img.shields.io/badge/status-WIP-orange)
 
 ## About
 
