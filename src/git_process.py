@@ -3,52 +3,105 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License.
 
-from dataclasses import dataclass
 import subprocess
+from dataclasses import dataclass, field
+
+
+FIELD_SEP = "\x1f"  # Unit Separator
+COMMIT_SEP = "\x1e"  # Record Separator
+
+FORMAT = FIELD_SEP.join([
+    "%H",   # full hash
+    "%h",   # short hash
+    "%an",  # author name
+    "%ae",  # author email
+    "%at",  # author timestamp (unix)
+    "%cn",  # committer name
+    "%ce",  # committer email
+    "%ct",  # committer timestamp (unix)
+    "%P",   # parent hashes (space-separated)
+    "%D",   # refs (HEAD, branches, tags)
+    "%s",   # subject
+    "%b",   # body
+]) + COMMIT_SEP
 
 
 @dataclass
 class Commit:
-    _hash: str
-    _parents: list[str]
-    _author: str
-    _date: str
-    _msg: str
-    
+    hash: str
+    short_hash: str
+    author_name: str
+    author_email: str
+    author_ts: int
+    committer_name: str
+    committer_email: str
+    committer_ts: int
+    parents: list[str]     
+    refs: list[str]      
+    subject: str
+    body: str
 
-def get_commits():
+    @property
+    def is_merge(self) -> bool:
+        return len(self.parents) > 1
+
+    @property
+    def is_root(self) -> bool:
+        return len(self.parents) == 0
+
+
+def get_commits(repo_path: str = ".", max_count: int = 200) -> list[Commit]:
     result = subprocess.run(
         [
-            "git",
+            "git", "-C", repo_path,
             "log",
-            "--all",
-            "--pretty=format:%H|%P|%an|%ad|%s"
+            f"--pretty=format:{FORMAT}",
+            f"--max-count={max_count}",
         ],
         capture_output=True,
-        text=True
+        text=True,
+        encoding="utf-8",
     )
 
-    commits = []
+    if result.returncode != 0:
+        raise RuntimeError(result.stderr.strip())
 
-    for line in result.stdout.splitlines():
-        commit_hash, parents, author, date, message = line.split("|", 4)
+    commits = []
+    
+    for raw in result.stdout.split(COMMIT_SEP):
+        parts = raw.split(FIELD_SEP)
+        
+        if not raw.strip():
+            continue
+        
+        (
+            hash_, short_hash, author_name, author_email, author_ts,
+            committer_name, committer_email, committer_ts,
+            parents_raw, refs_raw, subject, body,
+        ) = parts[:12]
 
         commits.append(Commit(
-            commit_hash,
-            parents.split(),
-            author,
-            date,
-            message,
-    
+            hash=hash_,
+            short_hash=short_hash,
+            author_name=author_name,
+            author_email=author_email,
+            author_ts=int(author_ts or 0),
+            committer_name=committer_name,
+            committer_email=committer_email,
+            committer_ts=int(committer_ts or 0),
+            parents=parents_raw.split() if parents_raw else [],
+            refs=[r.strip() for r in refs_raw.split(",") if r.strip()],
+            subject=subject,
+            body=body.strip(),
         ))
 
     return commits[::-1]
 
-
 if __name__ == "__main__":
     commits = get_commits()
     for c in commits:
-        print("HASH:", c._hash)
-        print("PARENTS:", c._parents)
-        print("MESSAGE:", c._msg)
+        print("HASH:", c.hash)
+        print("PARENTS:", c.parents)
+        print("SUBJECT:", c.subject)
+        print("BODY:", c.body)
         print()

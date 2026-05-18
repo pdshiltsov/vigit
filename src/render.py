@@ -8,8 +8,39 @@ from git_process import Commit
 from config import *
 
 
+def get_text(commit):
+    text = f"""
+COMMIT({commit.short_hash})                                              
+
+
+NAME
+       {commit.short_hash} - {commit.subject}
+
+SYNOPSIS
+       git show {commit.hash.strip()}
+
+DESCRIPTION
+       {commit.body or 'No description provided.'}
+
+AUTHOR
+       Name:   {commit.author_name} <{commit.author_email}>
+       Date:   {commit.author_ts}
+
+COMMITTER
+       Name:   {commit.committer_name} <{commit.committer_email}>
+       Date:   {commit.committer_ts}
+
+REFERENCES
+       {', '.join(commit.refs) if commit.refs else 'none'}
+
+PARENTS
+{'\n'.join(f'       {p}' for p in commit.parents) if commit.parents else '       none'}
+
+    """
+    return text
+
 def commit_render(commit: Commit) -> str:
-    return f"{commit._hash} - {commit._date} - {commit._author}"
+    return f"{commit.short_hash} - {commit.committer_ts} - {commit.committer_name}"
     
 def draw_status_bar(stdscr, dis: int, state: dict) -> None:
     h, w = stdscr.getmaxyx()
@@ -53,7 +84,7 @@ def base_render(stdscr, commits: list[Commit], pos: int, state: dict) -> None:
 
 def info_render(stdscr, commit: Commit, pos: int, state: dict) -> int:
     h, w = stdscr.getmaxyx()
-    msg = commit._msg
+    msg = get_text(commit)
 
     lines = []
     for line in msg.splitlines():
@@ -81,6 +112,6 @@ def info_render(stdscr, commit: Commit, pos: int, state: dict) -> int:
                 stdscr.addstr(i - pos, 1, lines[i % len(lines)])
     
     stdscr.attroff(curses.color_pair(TEXT_PAIR))
-    draw_status_bar(stdscr, pos % limit, state)
+    draw_status_bar(stdscr, pos, state)
 
     return pos_limit
