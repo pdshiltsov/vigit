@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # vigit - Minimal TUI application for working with Git directly from the terminal.
 # Copyright (C) 2026 vigit Pavel Shiltsov
 #
@@ -15,13 +17,29 @@
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 import curses
+import argparse
+from src import main
 
 
-TEXT_FG = curses.COLOR_WHITE
-TEXT_BG = curses.COLOR_BLACK
+def show_license() -> None:
+    with open("LICENSE", "r") as f:
+        print(f.read())
 
-STATUS_FG = curses.COLOR_BLACK
-STATUS_BG = curses.COLOR_CYAN
+parser = argparse.ArgumentParser(prog="vigit")
+parser.add_argument(
+    "--license",
+    action="store_true",
+    help="show license and exit"
+)
 
-TEXT_PAIR = 1
-STATUS_PAIR = 2
+args = parser.parse_args()
+
+if args.license:
+    show_license()
+    exit(0)
+else:
+    print("""vigit  Copyright (C) 2026
+This program comes with ABSOLUTELY NO WARRANTY.
+This is free software, and you are welcome to redistribute it
+under certain conditions; see `vigit --license` for details.""")
+    curses.wrapper(main)
