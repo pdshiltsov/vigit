@@ -50,7 +50,7 @@ def main(stdscr) -> None:
 
         match state["status"]:
             case "base":
-                base_render(stdscr, commits, y, state)
+                pos_limit = base_render(stdscr, commits, y, state)
             case "info":
                 pos_limit = info_render(stdscr, saved_info, pager_pos, state)
                 
@@ -62,7 +62,8 @@ def main(stdscr) -> None:
                     break
 
                 elif key == ord("j"):
-                    y += 1
+                    if y < len(commits):
+                        y += 1
 
                 elif key == ord("k"):
                     if y - 1 >= 0:

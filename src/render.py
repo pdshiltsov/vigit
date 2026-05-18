@@ -18,7 +18,7 @@
 import curses
 from src.git_process import Commit
 from src.config import *
-
+from datetime import datetime 
 
 def get_text(commit):
     text = f"""
@@ -36,11 +36,11 @@ DESCRIPTION
 
 AUTHOR
        Name:   {commit.author_name} <{commit.author_email}>
-       Date:   {commit.author_ts}
+       Date:   {datetime.fromtimestamp(commit.author_ts).strftime("%Y-%m-%d %H:%M:%S")}
 
 COMMITTER
        Name:   {commit.committer_name} <{commit.committer_email}>
-       Date:   {commit.committer_ts}
+       Date:   {datetime.fromtimestamp(commit.committer_ts).strftime("%Y-%m-%d %H:%M:%S")}
 
 REFERENCES
        {', '.join(commit.refs) if commit.refs else 'none'}
@@ -56,44 +56,43 @@ def commit_render(commit: Commit) -> str:
     
 def draw_status_bar(stdscr, dis: int, state: dict) -> None:
     h, w = stdscr.getmaxyx()
-    y = h - 2
 
     status = state["status"]
-    status_bar = f" (q to exit) pos: {dis}, h: {h}, w: {w} --{status}--"
+    status_bar = f" (q: exit, j/k: navigate, enter: details) pos: {dis} --{status}--"
   
     stdscr.attron(curses.color_pair(STATUS_PAIR))
-    stdscr.addstr(y, 0, status_bar[:w].ljust(w))
+    stdscr.addstr(h - 2, 0, status_bar[:w].ljust(w))
     stdscr.attroff(curses.color_pair(STATUS_PAIR))
 
-def base_render(stdscr, commits: list[Commit], pos: int, state: dict) -> None:
+def base_render(stdscr, commits: list[Commit], pos: int, state: dict) -> int:
     h, w = stdscr.getmaxyx()
 
     stdscr.attron(curses.color_pair(TEXT_PAIR))
 
+    # TODO: Fix it!
     limit = min(h - 2, len(commits))
     pos_limit = len(commits) // (h - 2) * (h - 2) + len(commits) % (h - 2) - limit
 
     if len(commits) <= h - 2:
         for i in range(0, limit):
              if i == (pos % limit):
-                 stdscr.addstr(i, 1, commit_render(commits[i % len(commits)])[:w - 1], curses.A_REVERSE)
+                 stdscr.addstr(i, 1, commit_render(commits[i])[:w - 1], curses.A_REVERSE)
              else:
-                 stdscr.addstr(i, 1, commit_render(commits[i % len(commits)])[:w - 1])
+                 stdscr.addstr(i, 1, commit_render(commits[i])[:w - 1])
 
     else:
-        if pos > pos_limit:
-            pos = pos_limit
-        
         for i in range(pos, pos + limit):
             if len(commits) > i:
                 if i == (pos % limit):
-                    stdscr.addstr(i, 1, commit_render(commits[i % len(commits)]), curses.A_REVERSE)
+                    stdscr.addstr(i - pos, 1, commit_render(commits[i]), curses.A_REVERSE)
                 else:
-                    stdscr.addstr(i, 1, commit_render(commits[i % len(commits)]))
+                    stdscr.addstr(i - pos, 1, commit_render(commits[i]))
 
     stdscr.attroff(curses.color_pair(TEXT_PAIR))
     draw_status_bar(stdscr, pos % limit, state)
 
+    return pos_limit
+    
 def info_render(stdscr, commit: Commit, pos: int, state: dict) -> int:
     h, w = stdscr.getmaxyx()
     msg = get_text(commit)
@@ -116,9 +115,6 @@ def info_render(stdscr, commit: Commit, pos: int, state: dict) -> int:
         for i in range(0, limit):
             stdscr.addstr(i, 1, lines[i])
     else:
-        if pos > pos_limit:
-            pos = pos_limit
-        
         for i in range(pos, pos + limit):
             if len(lines) > i:
                 stdscr.addstr(i - pos, 1, lines[i % len(lines)])
@@ -127,3 +123,5 @@ def info_render(stdscr, commit: Commit, pos: int, state: dict) -> int:
     draw_status_bar(stdscr, pos, state)
 
     return pos_limit
+
+
