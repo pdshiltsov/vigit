@@ -69,29 +69,30 @@ def base_render(stdscr, commits: list[Commit], pos: int, state: dict) -> int:
 
     stdscr.attron(curses.color_pair(TEXT_PAIR))
 
-    # TODO: Fix it!
     limit = min(h - 2, len(commits))
     pos_limit = len(commits) // (h - 2) * (h - 2) + len(commits) % (h - 2) - limit
-
+    pages = len(commits) // limit + (1 if not len(commits) % 2 else 0)
+    
     if len(commits) <= h - 2:
         for i in range(0, limit):
-             if i == (pos % limit):
-                 stdscr.addstr(i, 1, commit_render(commits[i])[:w - 1], curses.A_REVERSE)
-             else:
-                 stdscr.addstr(i, 1, commit_render(commits[i])[:w - 1])
+            if i == (pos % limit):
+                stdscr.addstr(i, 1, commit_render(commits[i])[:w - 1], curses.A_REVERSE)
+            else:
+                stdscr.addstr(i, 1, commit_render(commits[i])[:w - 1])
 
     else:
-        for i in range(pos, pos + limit):
-            if len(commits) > i:
-                if i == (pos % limit):
-                    stdscr.addstr(i - pos, 1, commit_render(commits[i]), curses.A_REVERSE)
-                else:
-                    stdscr.addstr(i - pos, 1, commit_render(commits[i]))
+        page_num = pos // limit
+        for i in range(0, limit):
+            commit_pos = (i + page_num * limit) % len(commits)
+            if i == (pos % limit):
+                stdscr.addstr(i, 1, commit_render(commits[commit_pos]), curses.A_REVERSE)
+            else:
+                stdscr.addstr(i, 1, commit_render(commits[commit_pos]))
 
     stdscr.attroff(curses.color_pair(TEXT_PAIR))
     draw_status_bar(stdscr, pos % limit, state)
 
-    return pos_limit
+    return len(commits)
     
 def info_render(stdscr, commit: Commit, pos: int, state: dict) -> int:
     h, w = stdscr.getmaxyx()
@@ -118,7 +119,7 @@ def info_render(stdscr, commit: Commit, pos: int, state: dict) -> int:
         for i in range(pos, pos + limit):
             if len(lines) > i:
                 stdscr.addstr(i - pos, 1, lines[i % len(lines)])
-    
+                
     stdscr.attroff(curses.color_pair(TEXT_PAIR))
     draw_status_bar(stdscr, pos, state)
 

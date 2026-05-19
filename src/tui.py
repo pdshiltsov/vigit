@@ -43,6 +43,7 @@ def main(stdscr) -> None:
 
     y = 0
     pager_pos = 0
+    pos_limit = -1
     saved_info = None
     while True:
         stdscr.erase()
@@ -62,7 +63,7 @@ def main(stdscr) -> None:
                     break
 
                 elif key == ord("j"):
-                    if y < len(commits):
+                    if y < pos_limit:
                         y += 1
 
                 elif key == ord("k"):
