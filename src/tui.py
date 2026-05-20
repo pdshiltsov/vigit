@@ -89,7 +89,11 @@ def main(stdscr) -> None:
                 elif key == ord("k"):
                     if pager_pos - 1 >= 0:
                         pager_pos -= 1
-                        
+
+                elif key == ord("p"):
+                    # TODO, add parents
+                    pass
+                    
                 else:
                     pass
 

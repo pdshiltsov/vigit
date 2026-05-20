@@ -93,7 +93,7 @@ def base_render(stdscr, commits: list[Commit], pos: int, state: dict) -> int:
     draw_status_bar(stdscr, pos % limit, state)
 
     return len(commits)
-    
+
 def info_render(stdscr, commit: Commit, pos: int, state: dict) -> int:
     h, w = stdscr.getmaxyx()
     msg = get_text(commit)
