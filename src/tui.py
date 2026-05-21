@@ -17,6 +17,7 @@
 from src.git_process import Commit, get_commits
 from src.render import base_render, info_render
 from src.config import *
+from src.fsm import LSI
 import curses
 
 
@@ -37,9 +38,7 @@ def main(stdscr) -> None:
     init_colors()
     commits = get_commits()
 
-    state = {
-        "status": "base",
-    }
+    state = LSI(["base", "info"])
 
     y = 0
     pager_pos = 0
@@ -49,7 +48,7 @@ def main(stdscr) -> None:
         stdscr.erase()
         stdscr.refresh()
 
-        match state["status"]:
+        match state.status:
             case "base":
                 pos_limit = base_render(stdscr, commits, y, state)
             case "info":
@@ -57,7 +56,7 @@ def main(stdscr) -> None:
                 
         key = stdscr.getch()
 
-        match state["status"]: 
+        match state.status: 
             case "base":
                 if key == ord("q"):
                     break
@@ -71,14 +70,14 @@ def main(stdscr) -> None:
                         y -= 1
 
                 elif key in (curses.KEY_ENTER, 10, 13):
-                    state["status"] = "info"
+                    state.following()
                     saved_info = commits[y % len(commits)]
                 else:
                     pass
 
             case "info":
                 if key == ord("q"):
-                    state["status"] = "base"
+                    state.previous()
                     saved_info = None
                     pager_pos = 0
 

@@ -57,7 +57,7 @@ def commit_render(commit: Commit) -> str:
 def draw_status_bar(stdscr, dis: int, state: dict) -> None:
     h, w = stdscr.getmaxyx()
 
-    status = state["status"]
+    status = state.status
     status_bar = f" (q: exit, j/k: navigate, enter: details) pos: {dis} --{status}--"
   
     stdscr.attron(curses.color_pair(STATUS_PAIR))

@@ -12,7 +12,7 @@ class LSI: # Linear state iterator
             self._pos += 1
 
     @property
-    def state(self) -> str:
+    def status(self) -> str:
         return self.state_sequence[self._pos]
         
 class FSM:
