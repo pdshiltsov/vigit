@@ -83,7 +83,11 @@ def base_render(stdscr, commits: list[Commit], pos: int, state: dict) -> int:
     else:
         page_num = pos // limit
         for i in range(0, limit):
-            commit_pos = (i + page_num * limit) % len(commits)
+            commit_pos = (i + page_num * limit)
+
+            if not (commit_pos < len(commits)):
+                break
+            
             if i == (pos % limit):
                 stdscr.addstr(i, 1, commit_render(commits[commit_pos]), curses.A_REVERSE)
             else:

@@ -1,3 +1,20 @@
+# vigit - Minimal TUI application for working with Git directly from the terminal.
+# Copyright (C) 2026 vigit Pavel Shiltsov
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+
 class LSI: # Linear state iterator
     def __init__(self, state_sequence: list[str]) -> None:
         self.state_sequence = state_sequence
@@ -14,6 +31,21 @@ class LSI: # Linear state iterator
     @property
     def status(self) -> str:
         return self.state_sequence[self._pos]
+
         
 class FSM:
-    pass
+    def __init__(self, states: dict[str, LSI]) -> None:
+        self.states = states
+        self.pos = list(states.keys())[0]
+
+    @property
+    def get_state(self) -> LSI:
+        return self.states[self.pos]
+
+    def change_state(self, new_state: str) -> None:
+        if new_state in self.state.keys():
+            self.pos = new_state
+        else:
+            raise ValueError(f"Incorrect state, got: {new_state} instead of {self.states}")
+
+    
