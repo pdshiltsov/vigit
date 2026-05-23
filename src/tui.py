@@ -39,7 +39,7 @@ def main(stdscr) -> None:
     commits = get_commits()
 
     states = {
-        "normal": LSI(["base", "info"])
+        "normal": LSI(["base", "info"]),
         "parents": LSI(["base", "info"])
     }
 
