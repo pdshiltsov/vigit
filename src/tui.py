@@ -40,6 +40,7 @@ def main(stdscr) -> None:
 
     states = {
         "normal": LSI(["base", "info"])
+        "parents": LSI(["base", "info"])
     }
 
     fsm = FSM(states)
