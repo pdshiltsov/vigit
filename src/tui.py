@@ -45,18 +45,26 @@ def main(stdscr) -> None:
 
     fsm = FSM(states)
     state = fsm.get_state # LSI type
+
+    current_status = "normal"
     
     y = 0
     pager_pos = 0
     pos_limit = -1
     saved_info = None
+    current_info = None
+    parents_current_info = None
     while True:
         stdscr.erase()
         stdscr.refresh()
-
+        if current_status == "normal":
+            current_info = commits
+        else:
+            current_info = parents_current_info
+            
         match state.status:
             case "base":
-                pos_limit = base_render(stdscr, commits, y, state)
+                pos_limit = base_render(stdscr, current_info, y, state)
             case "info":
                 pos_limit = info_render(stdscr, saved_info, pager_pos, state)
                 
@@ -77,7 +85,7 @@ def main(stdscr) -> None:
 
                 elif key in (curses.KEY_ENTER, 10, 13):
                     state.following()
-                    saved_info = commits[y]
+                    saved_info = current_info[y]
                 else:
                     pass
 
@@ -96,8 +104,12 @@ def main(stdscr) -> None:
                         pager_pos -= 1
 
                 elif key == ord("p"):
-                    # TODO: add parents
-                    pass
+                    parents_current_info = filter(
+                        saved_info.parents,
+                        key=lambda x: x.hash in saved_info.parents
+                    ) 
+
+                    # TODO: add rendering
                     
                 else:
                     pass
