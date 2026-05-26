@@ -22,9 +22,6 @@ from datetime import datetime
 
 def get_text(commit):
     text = f"""
-COMMIT({commit.short_hash})                                              
-
-
 NAME
        {commit.short_hash} - {commit.subject}
 
