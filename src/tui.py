@@ -49,6 +49,7 @@ def main(stdscr) -> None:
     current_status = "normal" # or "parents"
     
     y = 0
+    saved_pos = 0
     pager_pos = 0
     pos_limit = -1
     saved_info = None
@@ -62,7 +63,7 @@ def main(stdscr) -> None:
         else:
             current_info = parents_current_info
             
-        match state.status:
+        match state.status: # TODO: change FSM to states (lines 41-44)
             case "base":
                 pos_limit = base_render(stdscr, current_info, y, state)
             case "info":
@@ -77,6 +78,7 @@ def main(stdscr) -> None:
                         break
                     else:
                         current_status = "normal"
+                        y = saved_pos
 
                 elif key == ord("j"):
                     if y + 1 < pos_limit:
@@ -108,7 +110,7 @@ def main(stdscr) -> None:
 
                 elif key == ord("p") and current_status == "normal": # to avoid multiple parents opening
                     parents_current_info = saved_info.parents
-                    y = 0
+                    y, saved_pos = 0, y
 
                     current_status = "parents"
                     state.previous()
