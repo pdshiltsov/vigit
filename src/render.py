@@ -45,7 +45,7 @@ COMMITTER
 REFERENCES
        {', '.join(commit.refs) if commit.refs else 'none'}
 
-PARENTS (press p to see more)
+PARENTS (press p to see more, you can't see parents of parents)
 {'\n'.join(f'       {p.hash}' for p in commit.parents) if commit.parents else '       none'}
 
     """
