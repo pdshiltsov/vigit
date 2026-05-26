@@ -79,7 +79,7 @@ def get_commits(repo_path: str = ".", max_count: int = 200) -> list[Commit]:
 
     commits = []
     
-    for raw in result.stdout.split(COMMIT_SEP):
+    for raw in result.stdout.split(COMMIT_SEP)[::-1]:
         parts = raw.split(FIELD_SEP)
         
         if not raw.strip():
@@ -91,8 +91,14 @@ def get_commits(repo_path: str = ".", max_count: int = 200) -> list[Commit]:
             parents_raw, refs_raw, subject, body,
         ) = parts[:12]
 
+        pre_parents = parents_raw.split()
+        parents = []
+        for commit in commits:
+            if commit.hash in pre_parents:
+                parents.append(commit)
+        
         commits.append(Commit(
-            hash=hash_,
+            hash=hash_.strip(),
             short_hash=short_hash,
             author_name=author_name,
             author_email=author_email,
@@ -100,13 +106,13 @@ def get_commits(repo_path: str = ".", max_count: int = 200) -> list[Commit]:
             committer_name=committer_name,
             committer_email=committer_email,
             committer_ts=int(committer_ts or 0),
-            parents=parents_raw.split() if parents_raw else [],
+            parents=parents,
             refs=[r.strip() for r in refs_raw.split(",") if r.strip()],
             subject=subject,
             body=body.strip(),
         ))
 
-    return commits[::-1]
+    return commits
 
 if __name__ == "__main__":
     commits = get_commits()

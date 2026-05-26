@@ -46,7 +46,7 @@ REFERENCES
        {', '.join(commit.refs) if commit.refs else 'none'}
 
 PARENTS
-{'\n'.join(f'       {p}' for p in commit.parents) if commit.parents else '       none'}
+{'\n'.join(f'       {p.hash}' for p in commit.parents) if commit.parents else '       none'}
 
     """
     return text
@@ -69,6 +69,10 @@ def base_render(stdscr, commits: list[Commit], pos: int, state: dict) -> int:
 
     stdscr.attron(curses.color_pair(TEXT_PAIR))
 
+    if len(commits) == 0:
+        stdscr.addstr(0, 1, "No elements, press q to exit")
+        return 0
+    
     limit = min(h - 2, len(commits))
     pos_limit = len(commits) // (h - 2) * (h - 2) + len(commits) % (h - 2) - limit
     pages = len(commits) // limit + (1 if not len(commits) % 2 else 0)

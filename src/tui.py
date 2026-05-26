@@ -46,7 +46,7 @@ def main(stdscr) -> None:
     fsm = FSM(states)
     state = fsm.get_state # LSI type
 
-    current_status = "normal"
+    current_status = "normal" # or "parents"
     
     y = 0
     pager_pos = 0
@@ -73,7 +73,10 @@ def main(stdscr) -> None:
         match state.status: 
             case "base":
                 if key == ord("q"):
-                    break
+                    if current_status == "normal":
+                        break
+                    else:
+                        current_status = "normal"
 
                 elif key == ord("j"):
                     if y + 1 < pos_limit:
@@ -103,13 +106,12 @@ def main(stdscr) -> None:
                     if pager_pos - 1 >= 0:
                         pager_pos -= 1
 
-                elif key == ord("p"):
-                    parents_current_info = filter(
-                        saved_info.parents,
-                        key=lambda x: x.hash in saved_info.parents
-                    ) 
+                elif key == ord("p") and current_status == "normal": # to avoid multiple parents opening
+                    parents_current_info = saved_info.parents
+                    y = 0
 
-                    # TODO: add rendering
+                    current_status = "parents"
+                    state.previous()
                     
                 else:
                     pass
