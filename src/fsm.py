@@ -32,19 +32,25 @@ class LSI: # Linear state iterator
     def status(self) -> str:
         return self.state_sequence[self._pos]
 
-        
-class FSM:
+
+# TODO: ADD TO INFO SAVING IN LSI AND FSM!!!
+    
+class FSM: 
     def __init__(self, states: dict[str, LSI]) -> None:
         self.states = states
-        self.pos = list(states.keys())[0]
+        self._pos = list(states.keys())[0]
 
     @property
-    def get_state(self) -> LSI:
+    def state(self) -> LSI:
         return self.states[self.pos]
 
+    @property
+    def pos(self) -> str:
+        return self._pos
+
     def change_state(self, new_state: str) -> None:
-        if new_state in self.state.keys():
-            self.pos = new_state
+        if new_state in self.states.keys():
+            self._pos = new_state
         else:
             raise ValueError(f"Incorrect state, got: {new_state} instead of {self.states}")
 

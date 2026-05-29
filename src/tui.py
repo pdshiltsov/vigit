@@ -44,9 +44,6 @@ def main(stdscr) -> None:
     }
 
     fsm = FSM(states)
-    state = fsm.get_state # LSI type
-
-    current_status = "normal" # or "parents"
     
     y = 0
     saved_pos = 0
@@ -58,26 +55,26 @@ def main(stdscr) -> None:
     while True:
         stdscr.erase()
         stdscr.refresh()
-        if current_status == "normal":
+        if fsm.pos == "normal":
             current_info = commits
         else:
             current_info = parents_current_info
             
-        match state.status: # TODO: change FSM to states (lines 41-44)
+        match fsm.state.status:
             case "base":
-                pos_limit = base_render(stdscr, current_info, y, state)
+                pos_limit = base_render(stdscr, current_info, y, fsm.state)
             case "info":
-                pos_limit = info_render(stdscr, saved_info, pager_pos, state)
+                pos_limit = info_render(stdscr, saved_info, pager_pos, fsm.state)
                 
         key = stdscr.getch()
 
-        match state.status: 
+        match fsm.state.status: 
             case "base":
                 if key == ord("q"):
-                    if current_status == "normal":
+                    if fsm.pos == "normal":
                         break
                     else:
-                        current_status = "normal"
+                        fsm.change_state("normal")
                         y = saved_pos
 
                 elif key == ord("j"):
@@ -89,14 +86,14 @@ def main(stdscr) -> None:
                         y -= 1
 
                 elif key in (curses.KEY_ENTER, 10, 13):
-                    state.following()
+                    fsm.state.following()
                     saved_info = current_info[y]
                 else:
                     pass
 
             case "info":
                 if key == ord("q"):
-                    state.previous()
+                    fsm.state.previous()
                     saved_info = None
                     pager_pos = 0
 
@@ -108,12 +105,12 @@ def main(stdscr) -> None:
                     if pager_pos - 1 >= 0:
                         pager_pos -= 1
 
-                elif key == ord("p") and current_status == "normal": # to avoid multiple parents opening
+                elif key == ord("p") and fsm.pos == "normal": # to avoid multiple parents opening
                     parents_current_info = saved_info.parents
                     y, saved_pos = 0, y
 
-                    current_status = "parents"
-                    state.previous()
+                    fsm.change_state("parents")
+                    fsm.state.previous()
                     
                 else:
                     pass
