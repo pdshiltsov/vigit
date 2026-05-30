@@ -45,26 +45,26 @@ def main(stdscr) -> None:
 
     fsm = FSM(states)
     
-    y = 0
-    saved_pos = 0
-    pager_pos = 0
+    y = 0 # eliminate
+    saved_pos = 0 # eliminate
+    pager_pos = 0 # eliminate
     pos_limit = -1
-    saved_info = None
-    current_info = None
-    parents_current_info = None
+    saved_info = None # eliminate
+    current_info = None # eliminate
+    parents_current_info = None # eliminate
     while True:
         stdscr.erase()
         stdscr.refresh()
         if fsm.pos == "normal":
-            current_info = commits
+            fsm.state.info["info"] = commits
         else:
-            current_info = parents_current_info
+            fsm.state.info["info"] = parents_current_info
             
         match fsm.state.status:
             case "base":
-                pos_limit = base_render(stdscr, current_info, y, fsm.state)
+                pos_limit = base_render(stdscr, fsm.state.info["info"], fsm.state.info["cursor"], fsm.state)
             case "info":
-                pos_limit = info_render(stdscr, saved_info, pager_pos, fsm.state)
+                pos_limit = info_render(stdscr, fsm.state.info["info"], fsm.state.info["cursor"], fsm.state)
                 
         key = stdscr.getch()
 
@@ -75,42 +75,41 @@ def main(stdscr) -> None:
                         break
                     else:
                         fsm.change_state("normal")
-                        y = saved_pos
 
                 elif key == ord("j"):
-                    if y + 1 < pos_limit:
-                        y += 1
+                    if fsm.state.info["cursor"] + 1 < pos_limit:
+                        fsm.state.info["cursor"] += 1
 
                 elif key == ord("k"):
-                    if y - 1 >= 0:
-                        y -= 1
+                    if fsm.state.info["cursor"] - 1 >= 0:
+                        fsm.state.info["cursor"] -= 1
 
                 elif key in (curses.KEY_ENTER, 10, 13):
+                    tmp = fsm.state.info
                     fsm.state.following()
-                    saved_info = current_info[y]
+                    fsm.state.info["info"] = tmp["info"][tmp["cursor"]]
                 else:
                     pass
 
             case "info":
                 if key == ord("q"):
                     fsm.state.previous()
-                    saved_info = None
-                    pager_pos = 0
+                    fsm.state.info["info"] = None
+                    fsm.state.info["cursor"] = 0
 
                 elif key == ord("j"):
-                    if pager_pos < pos_limit:
-                        pager_pos += 1
+                    if fsm.state.info["cursor"] < pos_limit:
+                        fsm.state.info["cursor"] += 1
 
                 elif key == ord("k"):
-                    if pager_pos - 1 >= 0:
-                        pager_pos -= 1
+                    if fsm.state.info["cursor"] - 1 >= 0:
+                        fsm.state.info["cursor"] -= 1
 
                 elif key == ord("p") and fsm.pos == "normal": # to avoid multiple parents opening
-                    parents_current_info = saved_info.parents
-                    y, saved_pos = 0, y
+                    tmp = fsm.state.info["info"].parents
 
                     fsm.change_state("parents")
-                    fsm.state.previous()
+                    fsm.state.previous() # 100% base
                     
                 else:
                     pass

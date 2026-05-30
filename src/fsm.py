@@ -19,7 +19,10 @@ class LSI: # Linear state iterator
     def __init__(self, state_sequence: list[str]) -> None:
         self.state_sequence = state_sequence
         self._pos = 0
-
+        self._info = {
+            key: {"cursor": 0, "info": None} for key in state_sequence
+        }
+        
     def previous(self) -> None:
         if self._pos - 1 >= 0:
             self._pos -= 1
@@ -32,6 +35,10 @@ class LSI: # Linear state iterator
     def status(self) -> str:
         return self.state_sequence[self._pos]
 
+    @property
+    def info(self) -> dict:
+        return self._info[self.state_sequence[self._pos]]
+    
 
 # TODO: ADD TO INFO SAVING IN LSI AND FSM!!!
     
@@ -39,7 +46,7 @@ class FSM:
     def __init__(self, states: dict[str, LSI]) -> None:
         self.states = states
         self._pos = list(states.keys())[0]
-
+        
     @property
     def state(self) -> LSI:
         return self.states[self.pos]
