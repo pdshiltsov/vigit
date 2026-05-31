@@ -38,9 +38,7 @@ class LSI: # Linear state iterator
     @property
     def info(self) -> dict:
         return self._info[self.state_sequence[self._pos]]
-    
 
-# TODO: ADD TO INFO SAVING IN LSI AND FSM!!!
     
 class FSM: 
     def __init__(self, states: dict[str, LSI]) -> None:

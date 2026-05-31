@@ -18,12 +18,12 @@
 
 import curses
 import argparse
-from src import main
+from src import main, license
 
 
 def show_license() -> None:
     with open("LICENSE", "r") as f:
-        print(f.read())
+        return f.read().strip()
 
 parser = argparse.ArgumentParser(prog="vigit")
 parser.add_argument(
@@ -35,7 +35,9 @@ parser.add_argument(
 args = parser.parse_args()
 
 if args.license:
-    show_license()
+    text = show_license()
+    func = lambda x: license(x, text)
+    curses.wrapper(func)
     exit(0)
 else:
     print("""vigit  Copyright (C) 2026
@@ -43,3 +45,4 @@ This program comes with ABSOLUTELY NO WARRANTY.
 This is free software, and you are welcome to redistribute it
 under certain conditions; see `vigit --license` for details.""")
     curses.wrapper(main)
+    exit(0)

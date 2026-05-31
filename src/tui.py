@@ -15,7 +15,7 @@
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 from src.git_process import Commit, get_commits
-from src.render import base_render, info_render
+from src.render import base_render, info_render, license_render
 from src.config import *
 from src.fsm import LSI, FSM
 import curses
@@ -31,6 +31,28 @@ def init_colors() -> None:
     curses.init_pair(TEXT_PAIR, TEXT_FG, TEXT_BG)
     curses.init_pair(STATUS_PAIR, STATUS_FG, STATUS_BG)
 
+def license(stdscr, text: str) -> None:
+    curses.curs_set(0)
+    stdscr.keypad(True)
+
+    init_colors()
+
+    cursor = 0
+    while True:
+        stdscr.erase()
+        stdscr.refresh()
+        limit = license_render(stdscr, text, cursor)
+        key = stdscr.getch()
+        
+        if key == ord("q"): break
+        elif key == ord("j"):
+            if cursor + 1 < limit:
+                cursor += 1
+                    
+        elif key == ord("k"):
+            if cursor > 0:
+                cursor -= 1
+                    
 def main(stdscr) -> None:
     curses.curs_set(0)
     stdscr.keypad(True)

@@ -130,4 +130,39 @@ def info_render(stdscr, commit: Commit, pos: int, state: dict) -> int:
 
     return pos_limit
 
+def license_render(stdscr, text: str, pos: int) -> int:
+    h, w = stdscr.getmaxyx()
+
+    lines = []
+    for line in text.splitlines():
+        while len(line) > w - 2:
+            lines.append(line[:w - 2])
+            line = line[w - 2:]
+
+        if line:
+            lines.append(line)
+            
+    stdscr.attron(curses.color_pair(TEXT_PAIR))
+
+    limit = min(h - 2, len(lines))
+    pos_limit = len(lines) // (h - 2) * (h - 2) + len(lines) % (h - 2) - limit
+
+    if len(lines) <= h - 2:
+        for i in range(0, limit):
+            stdscr.addstr(i, 1, lines[i])
+    else:
+        for i in range(pos, pos + limit):
+            if len(lines) > i:
+                stdscr.addstr(i - pos, 1, lines[i % len(lines)])
+                
+    stdscr.attroff(curses.color_pair(TEXT_PAIR))
+
+    status_bar = f" (q: exit, j/k: navigate) pos: {pos} --license--"
+  
+    stdscr.attron(curses.color_pair(STATUS_PAIR))
+    stdscr.addstr(h - 2, 0, status_bar[:w].ljust(w))
+    stdscr.attroff(curses.color_pair(STATUS_PAIR))
+
+    return pos_limit
+
 
