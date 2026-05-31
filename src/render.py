@@ -21,41 +21,43 @@ from src.config import *
 from datetime import datetime 
 
 def get_text(commit):
+    parents = "\n".join(f"  {p.hash}" for p in commit.parents) if commit.parents else "  none"
+
     text = f"""
-NAME
-       {commit.short_hash} - {commit.subject}
+◆ {commit.short_hash}  {commit.subject}
 
-SYNOPSIS
-       git show {commit.hash.strip()}
+  → synopsis
+    git show {commit.hash.strip()}
 
-DESCRIPTION
-       {commit.body or 'No description provided.'}
+  → description
+    {commit.body or 'No description provided.'}
 
-AUTHOR
-       Name:   {commit.author_name} <{commit.author_email}>
-       Date:   {datetime.fromtimestamp(commit.author_ts).strftime("%Y-%m-%d %H:%M:%S")}
+  → author
+    {commit.author_name} <{commit.author_email}>
+    {datetime.fromtimestamp(commit.author_ts).strftime("%Y-%m-%d %H:%M:%S")}
 
-COMMITTER
-       Name:   {commit.committer_name} <{commit.committer_email}>
-       Date:   {datetime.fromtimestamp(commit.committer_ts).strftime("%Y-%m-%d %H:%M:%S")}
+  → committer
+    {commit.committer_name} <{commit.committer_email}>
+    {datetime.fromtimestamp(commit.committer_ts).strftime("%Y-%m-%d %H:%M:%S")}
 
-REFERENCES
-       {', '.join(commit.refs) if commit.refs else 'none'}
+  → refs
+    {', '.join(commit.refs) if commit.refs else 'none'}
 
-PARENTS (press p to see more, you can't see parents of parents)
-{'\n'.join(f'       {p.hash}' for p in commit.parents) if commit.parents else '       none'}
-
-    """
+  → parents
+  {parents}
+"""
     return text
 
 def commit_render(commit: Commit) -> str:
-    return f"{commit.short_hash} - {commit.committer_ts} - {commit.committer_name}"
-    
+    ts = datetime.fromtimestamp(commit.committer_ts)
+    readable_time = ts.strftime("%Y-%m-%d %H:%M")
+
+    return f"{commit.short_hash} | {readable_time} | {commit.committer_name}"    
 def draw_status_bar(stdscr, dis: int, state: dict) -> None:
     h, w = stdscr.getmaxyx()
 
     status = state.status
-    status_bar = f" (q: exit, j/k: navigate, enter: details) pos: {dis} --{status}--"
+    status_bar = f" (q: exit, j/k: navigate, enter: details, p: see parents) pos: {dis} --{status}--"
   
     stdscr.attron(curses.color_pair(STATUS_PAIR))
     stdscr.addstr(h - 2, 0, status_bar[:w].ljust(w))
@@ -63,9 +65,7 @@ def draw_status_bar(stdscr, dis: int, state: dict) -> None:
 
 def base_render(stdscr, commits: list[Commit], pos: int, state: dict) -> int:
     h, w = stdscr.getmaxyx()
-
     stdscr.attron(curses.color_pair(TEXT_PAIR))
-
     if len(commits) == 0:
         stdscr.addstr(0, 1, "No elements, press q to exit")
         return 0
@@ -74,29 +74,30 @@ def base_render(stdscr, commits: list[Commit], pos: int, state: dict) -> int:
     pos_limit = len(commits) // (h - 2) * (h - 2) + len(commits) % (h - 2) - limit
     pages = len(commits) // limit + (1 if not len(commits) % 2 else 0)
     
+    def render_line(row: int, commit, is_selected: bool):
+        prefix = commit_selected if is_selected else commit_not_selected
+        text = (prefix + commit_render(commit))[:w - 1]
+        if is_selected:
+            stdscr.attron(curses.color_pair(SELECTED_PAIR))
+            stdscr.addstr(row, 1, text)
+            stdscr.attroff(curses.color_pair(SELECTED_PAIR))
+            stdscr.attron(curses.color_pair(TEXT_PAIR))
+        else:
+            stdscr.addstr(row, 1, text)
+
     if len(commits) <= h - 2:
         for i in range(0, limit):
-            if i == (pos % limit):
-                stdscr.addstr(i, 1, commit_render(commits[i])[:w - 1], curses.A_REVERSE)
-            else:
-                stdscr.addstr(i, 1, commit_render(commits[i])[:w - 1])
-
+            render_line(i, commits[i], i == (pos % limit))
     else:
         page_num = pos // limit
         for i in range(0, limit):
-            commit_pos = (i + page_num * limit)
-
+            commit_pos = i + page_num * limit
             if not (commit_pos < len(commits)):
                 break
-            
-            if i == (pos % limit):
-                stdscr.addstr(i, 1, commit_render(commits[commit_pos]), curses.A_REVERSE)
-            else:
-                stdscr.addstr(i, 1, commit_render(commits[commit_pos]))
+            render_line(i, commits[commit_pos], i == (pos % limit))
 
     stdscr.attroff(curses.color_pair(TEXT_PAIR))
     draw_status_bar(stdscr, pos % limit, state)
-
     return len(commits)
 
 def info_render(stdscr, commit: Commit, pos: int, state: dict) -> int:

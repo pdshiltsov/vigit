@@ -25,3 +25,11 @@ STATUS_BG = curses.COLOR_CYAN
 
 TEXT_PAIR = 1
 STATUS_PAIR = 2
+SELECTED_PAIR = 3
+
+
+# you can change this section
+commit_selected = "● "
+commit_not_selected = "○ "
+
+SELECTED = curses.COLOR_CYAN

@@ -30,6 +30,7 @@ def init_colors() -> None:
     # Initialize color pairs
     curses.init_pair(TEXT_PAIR, TEXT_FG, TEXT_BG)
     curses.init_pair(STATUS_PAIR, STATUS_FG, STATUS_BG)
+    curses.init_pair(SELECTED_PAIR, SELECTED, TEXT_BG)
 
 def license(stdscr, text: str) -> None:
     curses.curs_set(0)
