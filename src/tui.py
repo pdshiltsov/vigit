@@ -44,21 +44,12 @@ def main(stdscr) -> None:
     }
 
     fsm = FSM(states)
+    fsm.state.info["info"] = commits 
     
-    y = 0 # eliminate
-    saved_pos = 0 # eliminate
-    pager_pos = 0 # eliminate
     pos_limit = -1
-    saved_info = None # eliminate
-    current_info = None # eliminate
-    parents_current_info = None # eliminate
     while True:
         stdscr.erase()
         stdscr.refresh()
-        if fsm.pos == "normal":
-            fsm.state.info["info"] = commits
-        else:
-            fsm.state.info["info"] = parents_current_info
             
         match fsm.state.status:
             case "base":
@@ -85,17 +76,17 @@ def main(stdscr) -> None:
                         fsm.state.info["cursor"] -= 1
 
                 elif key in (curses.KEY_ENTER, 10, 13):
-                    tmp = fsm.state.info
+                    tmp_info, tmp_cursor = fsm.state.info["info"], fsm.state.info["cursor"]
                     fsm.state.following()
-                    fsm.state.info["info"] = tmp["info"][tmp["cursor"]]
+                    fsm.state.info["info"] = tmp_info[tmp_cursor]
                 else:
                     pass
 
             case "info":
                 if key == ord("q"):
-                    fsm.state.previous()
                     fsm.state.info["info"] = None
                     fsm.state.info["cursor"] = 0
+                    fsm.state.previous()
 
                 elif key == ord("j"):
                     if fsm.state.info["cursor"] < pos_limit:
@@ -110,6 +101,7 @@ def main(stdscr) -> None:
 
                     fsm.change_state("parents")
                     fsm.state.previous() # 100% base
+                    fsm.state.info["info"] = tmp
                     
                 else:
                     pass
