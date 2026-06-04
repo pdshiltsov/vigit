@@ -14,39 +14,42 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-
 import curses
 from src.git_process import Commit
 from src.config import *
 from datetime import datetime 
 
-def get_text(commit):
-    parents = "\n".join(f"  {p.hash}" for p in commit.parents) if commit.parents else "  none"
 
-    text = f"""
-◆ {commit.short_hash}  {commit.subject}
+def get_text(commit: Commit) -> str:
+    def format_person(name: str, email: str, ts: int) -> str:
+        date = datetime.fromtimestamp(ts).strftime("%Y-%m-%d %H:%M:%S")
+        return f"Name: {name} <{email}>\n\tDate: {date}"
 
-  → synopsis
-    git show {commit.hash.strip()}
+    parents = "\n".join(f"\t{p.hash}" for p in commit.parents) if commit.parents else "\tnone"
+    refs = ", ".join(commit.refs) if commit.refs else "none"
 
-  → description
-    {commit.body or 'No description provided.'}
+    return f"""\
+NAME
+\t{commit.short_hash} - {commit.subject}
 
-  → author
-    {commit.author_name} <{commit.author_email}>
-    {datetime.fromtimestamp(commit.author_ts).strftime("%Y-%m-%d %H:%M:%S")}
+SYNOPSIS
+\tgit show {commit.hash.strip()}
 
-  → committer
-    {commit.committer_name} <{commit.committer_email}>
-    {datetime.fromtimestamp(commit.committer_ts).strftime("%Y-%m-%d %H:%M:%S")}
+DESCRIPTION
+\t{commit.body or "No description provided."}
 
-  → refs
-    {', '.join(commit.refs) if commit.refs else 'none'}
+AUTHOR
+\t{format_person(commit.author_name, commit.author_email, commit.author_ts)}
 
-  → parents
-  {parents}
+COMMITTER
+\t{format_person(commit.committer_name, commit.committer_email, commit.committer_ts)}
+
+REFERENCES
+\t{refs}
+
+PARENTS (press p to see more, you can't see parents of parents)
+{parents}
 """
-    return text
 
 def commit_render(commit: Commit) -> str:
     ts = datetime.fromtimestamp(commit.committer_ts)

@@ -21,7 +21,7 @@ TEXT_FG = curses.COLOR_WHITE
 TEXT_BG = curses.COLOR_BLACK
 
 STATUS_FG = curses.COLOR_BLACK
-STATUS_BG = curses.COLOR_CYAN
+STATUS_BG = curses.COLOR_GREEN
 
 TEXT_PAIR = 1
 STATUS_PAIR = 2
@@ -29,7 +29,7 @@ SELECTED_PAIR = 3
 
 
 # you can change this section
-commit_selected = "● "
-commit_not_selected = "○ "
+commit_selected = "> "
+commit_not_selected = "  "
 
-SELECTED = curses.COLOR_CYAN
+SELECTED = curses.COLOR_GREEN
