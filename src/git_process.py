@@ -114,6 +114,22 @@ def get_commits(repo_path: str = ".", max_count: int = 200) -> list[Commit]:
 
     return commits
 
+def get_changed_files(commit: Commit) -> list:
+    # git diff-tree --no-commit-id --name-only -r
+    result = subprocess.run(
+        ["git", "diff-tree", "--no-commit-id", "--name-status", "-r", commit.hash],
+        capture_output=True,
+        text=True,
+        encoding="UTF-8",
+        check=True
+    )
+
+    files = []
+    for line in result.stdout.splitlines():
+        files.append(line.split())
+
+    return files
+
 def is_git() -> tuple[bool, str]:
     process = subprocess.run(
         ["git", "rev-parse", "--is-inside-work-tree"],
