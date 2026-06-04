@@ -54,6 +54,35 @@ def license(stdscr, text: str) -> None:
             if cursor > 0:
                 cursor -= 1
                     
+
+def no_git(stdscr, err: str) -> None:
+    curses.curs_set(0)
+    stdscr.keypad(True)
+
+    init_colors()
+    
+    text = f"""
+0       0 0000000 0000000 0000000 0000000
+ 0     0     0    0          0       0
+  0   0      0    0   000    0       0
+   0 0       0    0     0    0       0
+    0     0000000 0000000 0000000    0
+
+      > {err}
+        (press any key to exit)
+
+vigit Copyright (C) 2026
+see `vigit --license` for more details.
+    
+    """
+    
+    while True:
+        stdscr.erase()
+        stdscr.refresh()
+        stdscr.addstr(0, 0, text)
+        if stdscr.getch():
+            break
+        
 def main(stdscr) -> None:
     curses.curs_set(0)
     stdscr.keypad(True)
@@ -100,8 +129,9 @@ def main(stdscr) -> None:
 
                 elif key in (curses.KEY_ENTER, 10, 13):
                     tmp_info, tmp_cursor = fsm.state.info["info"], fsm.state.info["cursor"]
-                    fsm.state.following()
-                    fsm.state.info["info"] = tmp_info[tmp_cursor]
+                    if not (len(tmp_info) == 0 and fsm.pos == "parents"):
+                        fsm.state.following()
+                        fsm.state.info["info"] = tmp_info[tmp_cursor]
                 else:
                     pass
 

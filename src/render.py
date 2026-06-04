@@ -169,4 +169,3 @@ def license_render(stdscr, text: str, pos: int) -> int:
 
     return pos_limit
 
-

@@ -114,6 +114,15 @@ def get_commits(repo_path: str = ".", max_count: int = 200) -> list[Commit]:
 
     return commits
 
+def is_git() -> tuple[bool, str]:
+    process = subprocess.run(
+        ["git", "rev-parse", "--is-inside-work-tree"],
+        capture_output = True,
+        text = True
+    )
+
+    return (process.returncode == 0, process.stderr)
+
 if __name__ == "__main__":
     commits = get_commits()
     for c in commits:

@@ -19,6 +19,7 @@
 import curses
 import argparse
 from src import main, license
+from src import is_git, no_git
 
 
 def show_license() -> None:
@@ -33,16 +34,15 @@ parser.add_argument(
 )
 
 args = parser.parse_args()
-
-if args.license:
+result = is_git()
+if not result[0]:
+    curses.wrapper(lambda x: no_git(x, result[1]))
+    exit(1)
+elif args.license:
     text = show_license()
     func = lambda x: license(x, text)
     curses.wrapper(func)
     exit(0)
 else:
-    print("""vigit  Copyright (C) 2026
-This program comes with ABSOLUTELY NO WARRANTY.
-This is free software, and you are welcome to redistribute it
-under certain conditions; see `vigit --license` for details.""")
     curses.wrapper(main)
     exit(0)
