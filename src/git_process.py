@@ -146,4 +146,5 @@ if __name__ == "__main__":
         print("PARENTS:", c.parents)
         print("SUBJECT:", c.subject)
         print("BODY:", c.body)
+        print("files:", get_changed_files(c))
         print()

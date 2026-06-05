@@ -82,7 +82,7 @@ def base_render(stdscr, items: list, pos: int, state: dict) -> int:
         if isinstance(item, Commit):
             text = (prefix + commit_render(item))[:w - 1]
         else:
-            text = (prefix + item)[:w - 1]  # because it's str
+            text = (prefix + ': '.join(item))[:w - 1]  # because it's str
             
         if is_selected:
             stdscr.attron(curses.color_pair(SELECTED_PAIR))
