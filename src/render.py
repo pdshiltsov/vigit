@@ -134,6 +134,44 @@ def info_render(stdscr, commit: Commit, pos: int, state: dict) -> int:
 
     return pos_limit
 
+def files_render(stdscr, files: list[str], pos: int, state: dict) -> int:
+    h, w = stdscr.getmaxyx()
+    stdscr.attron(curses.color_pair(TEXT_PAIR))
+    if len(files) == 0:
+        stdscr.addstr(0, 1, "No elements, press q to exit")
+        return 0
+    
+    limit = min(h - 2, len(commits))
+    pos_limit = len(commits) // (h - 2) * (h - 2) + len(commits) % (h - 2) - limit
+    pages = len(commits) // limit + (1 if not len(commits) % 2 else 0)
+    
+    def render_line(row: int, fileinfo: str, is_selected: bool):
+        prefix = commit_selected if is_selected else commit_not_selected
+        text = (prefix + fileinfo))[:w - 1]
+        if is_selected:
+            stdscr.attron(curses.color_pair(SELECTED_PAIR))
+            stdscr.addstr(row, 1, text)
+            stdscr.attroff(curses.color_pair(SELECTED_PAIR))
+            stdscr.attron(curses.color_pair(TEXT_PAIR))
+        else:
+            stdscr.addstr(row, 1, text)
+
+    if len(files) <= h - 2:
+        for i in range(0, limit):
+            render_line(i, files[i], i == (pos % limit))
+    else:
+        page_num = pos // limit
+        for i in range(0, limit):
+            file_pos = i + page_num * limit
+            if not (file_pos < len(files)):
+                break
+            render_line(i, files[file_pos], i == (pos % limit))
+
+    stdscr.attroff(curses.color_pair(TEXT_PAIR))
+    draw_status_bar(stdscr, pos % limit, state)
+    return len(files)
+
+
 def license_render(stdscr, text: str, pos: int) -> int:
     h, w = stdscr.getmaxyx()
 
