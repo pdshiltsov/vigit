@@ -159,8 +159,6 @@ def main(stdscr) -> None:
                     fsm.state.previous() # 100% base
                     fsm.state.info["info"] = tmp
 
-                    # TODO: add "d" key handle.
-
                 elif key == ord("d") and fsm.pos != "diff":
                     tmp = get_changed_files(fsm.state.info["info"])
 
