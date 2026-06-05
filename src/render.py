@@ -66,20 +66,24 @@ def draw_status_bar(stdscr, dis: int, state: dict) -> None:
     stdscr.addstr(h - 2, 0, status_bar[:w].ljust(w))
     stdscr.attroff(curses.color_pair(STATUS_PAIR))
 
-def base_render(stdscr, commits: list[Commit], pos: int, state: dict) -> int:
+def base_render(stdscr, items: list, pos: int, state: dict) -> int:
     h, w = stdscr.getmaxyx()
     stdscr.attron(curses.color_pair(TEXT_PAIR))
-    if len(commits) == 0:
+    if len(items) == 0:
         stdscr.addstr(0, 1, "No elements, press q to exit")
         return 0
     
-    limit = min(h - 2, len(commits))
-    pos_limit = len(commits) // (h - 2) * (h - 2) + len(commits) % (h - 2) - limit
-    pages = len(commits) // limit + (1 if not len(commits) % 2 else 0)
+    limit = min(h - 2, len(items))
+    pos_limit = len(items) // (h - 2) * (h - 2) + len(items) % (h - 2) - limit
+    pages = len(items) // limit + (1 if not len(items) % 2 else 0)
     
-    def render_line(row: int, commit, is_selected: bool):
+    def render_line(row: int, item, is_selected: bool):
         prefix = commit_selected if is_selected else commit_not_selected
-        text = (prefix + commit_render(commit))[:w - 1]
+        if isinstance(item, Commit):
+            text = (prefix + commit_render(item))[:w - 1]
+        else:
+            text = (prefix + item)[:w - 1]  # because it's str
+            
         if is_selected:
             stdscr.attron(curses.color_pair(SELECTED_PAIR))
             stdscr.addstr(row, 1, text)
@@ -88,20 +92,20 @@ def base_render(stdscr, commits: list[Commit], pos: int, state: dict) -> int:
         else:
             stdscr.addstr(row, 1, text)
 
-    if len(commits) <= h - 2:
+    if len(items) <= h - 2:
         for i in range(0, limit):
-            render_line(i, commits[i], i == (pos % limit))
+            render_line(i, items[i], i == (pos % limit))
     else:
         page_num = pos // limit
         for i in range(0, limit):
-            commit_pos = i + page_num * limit
-            if not (commit_pos < len(commits)):
+            item_pos = i + page_num * limit
+            if not (item_pos < len(items)):
                 break
-            render_line(i, commits[commit_pos], i == (pos % limit))
+            render_line(i, items[item_pos], i == (pos % limit))
 
     stdscr.attroff(curses.color_pair(TEXT_PAIR))
     draw_status_bar(stdscr, pos % limit, state)
-    return len(commits)
+    return len(items)
 
 def info_render(stdscr, commit: Commit, pos: int, state: dict) -> int:
     h, w = stdscr.getmaxyx()
@@ -133,44 +137,6 @@ def info_render(stdscr, commit: Commit, pos: int, state: dict) -> int:
     draw_status_bar(stdscr, pos, state)
 
     return pos_limit
-
-def files_render(stdscr, files: list[str], pos: int, state: dict) -> int:
-    h, w = stdscr.getmaxyx()
-    stdscr.attron(curses.color_pair(TEXT_PAIR))
-    if len(files) == 0:
-        stdscr.addstr(0, 1, "No elements, press q to exit")
-        return 0
-    
-    limit = min(h - 2, len(commits))
-    pos_limit = len(commits) // (h - 2) * (h - 2) + len(commits) % (h - 2) - limit
-    pages = len(commits) // limit + (1 if not len(commits) % 2 else 0)
-    
-    def render_line(row: int, fileinfo: str, is_selected: bool):
-        prefix = commit_selected if is_selected else commit_not_selected
-        text = (prefix + fileinfo))[:w - 1]
-        if is_selected:
-            stdscr.attron(curses.color_pair(SELECTED_PAIR))
-            stdscr.addstr(row, 1, text)
-            stdscr.attroff(curses.color_pair(SELECTED_PAIR))
-            stdscr.attron(curses.color_pair(TEXT_PAIR))
-        else:
-            stdscr.addstr(row, 1, text)
-
-    if len(files) <= h - 2:
-        for i in range(0, limit):
-            render_line(i, files[i], i == (pos % limit))
-    else:
-        page_num = pos // limit
-        for i in range(0, limit):
-            file_pos = i + page_num * limit
-            if not (file_pos < len(files)):
-                break
-            render_line(i, files[file_pos], i == (pos % limit))
-
-    stdscr.attroff(curses.color_pair(TEXT_PAIR))
-    draw_status_bar(stdscr, pos % limit, state)
-    return len(files)
-
 
 def license_render(stdscr, text: str, pos: int) -> int:
     h, w = stdscr.getmaxyx()

@@ -92,7 +92,8 @@ def main(stdscr) -> None:
 
     states = {
         "normal": LSI(["base", "info"]),
-        "parents": LSI(["base", "info"])
+        "parents": LSI(["base", "info"]),
+        "diff": LSI(["base", "info"]),
     }
 
     fsm = FSM(states)
@@ -155,6 +156,8 @@ def main(stdscr) -> None:
                     fsm.change_state("parents")
                     fsm.state.previous() # 100% base
                     fsm.state.info["info"] = tmp
+
+                    # TODO: add "d" key handle.
                     
                 else:
                     pass
