@@ -107,9 +107,12 @@ def base_render(stdscr, items: list, pos: int, state: dict) -> int:
     draw_status_bar(stdscr, pos % limit, state)
     return len(items)
 
-def info_render(stdscr, commit: Commit, pos: int, state: dict) -> int:
+def info_render(stdscr, commit: Commit | str, pos: int, state: dict) -> int:
     h, w = stdscr.getmaxyx()
-    msg = get_text(commit)
+    if not isinstance(commit, Commit):
+        msg = commit
+    else:
+        msg = get_text(commit)
 
     lines = []
     for line in msg.splitlines():

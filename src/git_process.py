@@ -139,6 +139,16 @@ def is_git() -> tuple[bool, str]:
 
     return (process.returncode == 0, process.stderr)
 
+def get_file_diff(commit: Commit, _file: str) -> str:
+    # git show <commit> -- <file>
+    process = subprocess.run(
+        ["git", "show", commit.hash, "--", _file],
+        capture_output = True,
+        text = True,
+        encoding="utf-8"
+    )
+    return process.stdout
+
 if __name__ == "__main__":
     commits = get_commits()
     for c in commits:

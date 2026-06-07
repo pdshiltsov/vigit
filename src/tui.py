@@ -14,7 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-from src.git_process import Commit, get_commits, get_changed_files
+from src.git_process import Commit, get_commits
+from src.git_process import get_changed_files, get_file_diff
 from src.render import base_render, info_render, license_render
 from src.config import *
 from src.fsm import LSI, FSM
@@ -133,8 +134,11 @@ def main(stdscr) -> None:
                     if not (len(tmp_info) == 0 and fsm.pos == "parents"):
                         fsm.state.following()
                         fsm.state.info["info"] = tmp_info[tmp_cursor]
-
-                    # TODO: add files handle
+                        
+                    if fsm.pos == "diff":
+                        curr_diff = get_file_diff(fsm.state.commit, tmp_info[tmp_cursor][1]) 
+                        fsm.state.following()
+                        fsm.state.info["info"] = curr_diff
                 else:
                     pass
 
@@ -160,11 +164,13 @@ def main(stdscr) -> None:
                     fsm.state.info["info"] = tmp
 
                 elif key == ord("d") and fsm.pos != "diff":
-                    tmp = get_changed_files(fsm.state.info["info"])
+                    commit = fsm.state.info["info"]
+                    tmp = get_changed_files(commit)
 
                     fsm.change_state("diff")
                     fsm.state.previous() # 100% base
                     fsm.state.info["info"] = tmp
+                    fsm.state.commit = commit
 
                 else:
                     pass
