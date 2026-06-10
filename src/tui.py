@@ -20,6 +20,7 @@ from src.git_process import get_files
 from src.analyzer import analyze_repo, RISK_RULES
 from src.render import base_render, info_render, license_render
 from src.render import render_file_analyze
+from src.render import docs
 from src.config import *
 from src.fsm import LSI, FSM
 import curses
@@ -98,7 +99,8 @@ def main(stdscr) -> None:
         "normal": LSI(["base", "info"]),
         "parents": LSI(["base", "info"]),
         "diff": LSI(["base", "info"]),
-        "analyzer": LSI(["info"])
+        "analyzer": LSI(["info"]),
+        "doc": LSI(["info"]),
     }
 
     fsm = FSM(states)
@@ -117,7 +119,7 @@ def main(stdscr) -> None:
                 
         key = stdscr.getch()
         
-        if fsm.pos == "analyzer" and key == ord("q"):
+        if fsm.pos in ("analyzer", "doc") and key == ord("q"):
             fsm.change_state("normal")
             continue
 
@@ -151,7 +153,9 @@ def main(stdscr) -> None:
                 elif key == ord("a"):
                     fsm.change_state("analyzer")
                     fsm.state.info["info"] = render_file_analyze(analyze_repo(get_files(), RISK_RULES))
-                    
+                elif key == ord("h"):
+                    fsm.change_state("doc")
+                    fsm.state.info["info"] = docs
                 else:
                     pass
 

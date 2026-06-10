@@ -187,3 +187,28 @@ def render_file_analyze(data: list) -> str:
 
     return result
 
+
+docs = """
+                       vigit Copyright (C) 2026 
+    This program comes with ABSOLUTELY NO WARRANTY; for details type
+    `vigit --license`. This is free software, and you are welcome
+    to redistribute it under certain conditions; type `vigit --license`
+    for details.
+
+DOCS:
+
+Navigation:
+  j / k        Move selection up / down
+  Enter        Select item
+
+Actions:
+  q            Quit application
+  p            Show parents (only direct parents, no recursive traversal)
+  d            Show git diff for selected item
+  a            Open file analyzer
+
+Notes:
+  - Parent navigation is limited to direct parents only
+  - File analyzer checks repository files for risk patterns
+  - Diff view shows changes relative to Git state
+"""
