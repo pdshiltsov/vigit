@@ -149,6 +149,16 @@ def get_file_diff(commit: Commit, _file: str) -> str:
     )
     return process.stdout
 
+def get_files() -> list[str]:
+    process = subprocess.run(
+        ["git", "ls-files"],
+        capture_output = True,
+        text = True,
+        encoding="utf-8"
+    )
+
+    return process.stdout.splitlines()
+
 if __name__ == "__main__":
     commits = get_commits()
     for c in commits:

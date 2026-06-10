@@ -16,7 +16,10 @@
 
 from src.git_process import Commit, get_commits
 from src.git_process import get_changed_files, get_file_diff
+from src.git_process import get_files
+from src.analyzer import analyze_repo, RISK_RULES
 from src.render import base_render, info_render, license_render
+from src.render import render_file_analyze
 from src.config import *
 from src.fsm import LSI, FSM
 import curses
@@ -95,6 +98,7 @@ def main(stdscr) -> None:
         "normal": LSI(["base", "info"]),
         "parents": LSI(["base", "info"]),
         "diff": LSI(["base", "info"]),
+        "analyzer": LSI(["info"])
     }
 
     fsm = FSM(states)
@@ -112,8 +116,12 @@ def main(stdscr) -> None:
                 pos_limit = info_render(stdscr, fsm.state.info["info"], fsm.state.info["cursor"], fsm.state)
                 
         key = stdscr.getch()
+        
+        if fsm.pos == "analyzer" and key == ord("q"):
+            fsm.change_state("normal")
+            continue
 
-        match fsm.state.status: 
+        match fsm.state.status:
             case "base":
                 if key == ord("q"):
                     if fsm.pos == "normal":
@@ -139,6 +147,11 @@ def main(stdscr) -> None:
                         curr_diff = get_file_diff(fsm.state.commit, tmp_info[tmp_cursor][1]) 
                         fsm.state.following()
                         fsm.state.info["info"] = curr_diff
+                        
+                elif key == ord("a"):
+                    fsm.change_state("analyzer")
+                    fsm.state.info["info"] = render_file_analyze(analyze_repo(get_files(), RISK_RULES))
+                    
                 else:
                     pass
 

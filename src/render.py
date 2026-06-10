@@ -176,3 +176,14 @@ def license_render(stdscr, text: str, pos: int) -> int:
 
     return pos_limit
 
+def render_file_analyze(data: list) -> str:
+    if len(data) == 0:
+        return "No issues found!"
+    
+    result = "Issues:\n"
+
+    for element in data:
+        result += f"{element['file']} | {element['mark']} | {element['description']}\n"
+
+    return result
+
